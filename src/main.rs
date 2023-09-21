@@ -2,7 +2,6 @@
 
 
 
-use std::{string, io::{Read, ErrorKind}, char, error::Error};
 
 #[derive(Debug)]
 struct Car{
@@ -30,31 +29,7 @@ fn std_input(msg : &str)->String{
     input.trim().to_string()
 }
 
-fn str_get_action(s: &String) -> Result<char, &str>{
-    
 
-    let c = match s.chars().nth(0){
-        Some(x)=>x,
-        None=> return Err("no action could be determined from {s}")
-
-    };
-
-    Ok(c)
-
-
-}
-fn str_get_index(s: &String)->Result<usize, &str>{
-
-    match s.parse::<usize>(){
-        Ok(x)=>Ok(x),
-        Err(x)=>{
-            println!("error: {x}");
-            await_continue();
-            Err("{x}")
-        }
-        
-    }
-}
     
 
 ///Awaits user input - a means to stay inside a loop iteration. 
@@ -138,7 +113,12 @@ fn CreateCar(car_vector: &mut Vec<Car>){
     let year = loop{
         println!("\nWhat year was it made? ");
         let input = std_input("Year: ");
-        match input.clone().parse::<usize>(){
+        match input.as_str(){
+            "Q"|"q"=>return println!("Return to menu"),
+            _=>()
+        };
+
+        match input.parse::<usize>(){
             Ok(x)=>{break x},
             Err(x)=>{
                 println!("error: {x}");
@@ -179,9 +159,9 @@ fn getSpecific(car_vector: &Vec<Car>){
     ReadAllCars(&car_vector);
 
     let input = std_input("Index: ");
-    match input.clone().chars().nth(0){
-        Some('Q'|'q') => {return println!("Returning to main menu");},
-        Some(_)|None => ()
+    match input.as_str(){
+        "Q"|"q" => return println!("Returning to main menu"),
+        _ => ()
     };
     //Match statement over returned Result from parse will make sure that a index is properly chosen.
     let index = match input.parse::<usize>(){
@@ -211,9 +191,9 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
         println!("What car would you like to update? \n");
         ReadAllCars(car_vector);
         let input = std_input("Index: ");
-        match input.clone().chars().nth(0){
-            Some('Q'|'q') => {return println!("Returning to main menu");},
-            Some(_)|None => ()
+        match input.as_str(){
+            "Q"|"q" => return println!("Returning to main menu"),
+            _ => ()
         };
 
 
@@ -233,24 +213,49 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
     let car : &mut Car = &mut car_vector[index as usize];
     
 
-    let attr = loop{
-        println!("\n\nWhat attributes do you wish to edit?\n\n");
+    loop{
+        println!("\n\nWhat attributes do you wish to edit?\n(Ommitting output will keep original value)\n");
         println!("b: Brand\nm: Model\ny: Year");    
 
+        //Match over attribute to edit
         match std_input("Attribute: ").chars().nth(0){
+            //If the option is q/Q then the user probably wants to quit. 
             Some('q'|'Q')=>return println!("Returning to main menu"),
+
+            //All other arms lead to editing an attribute, or doing nothing since invalid input will run the loop again
             Some('b'|'B')=>{
                 println!("Edit attribute - brand");
-                car.brand = std_input("Brand: ");
+                //If someone inputs 'q' or 'Q' as either brand or model or year - then they most likely want to quit. therefore those cases are handled 
+                car.brand = match std_input("Brand: ").as_str(){
+                    "q"|"Q"=>return println!("Returning to main menu"),
+                    ""=>car.brand.clone(),
+                    x=>x.to_string()
+                };
+                break
             },
             Some('m'|'M')=>{
                 println!("Edit attribute - model");
-                car.model = std_input("Model: ");
+                car.model = match std_input("Model: ").as_str(){
+                    "q"|"Q"=>return println!("Returning to main menu"),
+                    ""=>car.model.clone(),
+                    x=>x.to_string()
+                };
+                break
 
                },
             Some('y'|'Y')=>{
                 println!("Edit attribute - year (input a number)");
-                car.year = std_input("Year: ").parse::<usize>().unwrap();
+                let input= match std_input("Year: ").as_str(){
+                    "q"|"Q"=>return println!("Returning to main menu"),
+                    x=>x.to_string()
+                };
+                car.year = match input.parse::<usize>(){
+
+                    Ok(x)=>x,
+                    Err(_)=>car.year
+
+                };
+                break
                 },
             None | Some(_)=>{
                 println!("Invalid Attribute - ");
@@ -268,11 +273,11 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
 fn DeleteCar(car_vector: &mut Vec<Car>){
 
     let index = loop{
-        println!("What Car would you like to remove?\n===============\n");
+        println!("What Car would you like to remove?\n");
         let input = std_input("Index for deletion: ");
-        match input.clone().chars().nth(0){
-            Some('Q'|'q') => {return println!("Returning to main menu");},
-            Some(_)|None => ()
+        match input.as_str(){
+            "Q"|"q" => return println!("Returning to main menu"),
+            _ => ()
         };
 
 
