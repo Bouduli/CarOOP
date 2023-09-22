@@ -10,36 +10,9 @@ struct Car{
     year: usize
     
 }
-///Will clear the console by printing control characters to the console. Likely cross platform - however only tested in bash terminal. 
-fn clear(){
-    //Some black magic shii to clear the console
-    print!("\x1B[2J\x1B[1;1H");
-}
-///A function to take input from stdin.
-///A message is provided that will be used to prompt the terminal what to input. 
-fn std_input(msg : &str)->String{
-    use std::io::{self, Write};
-    let mut input:String = String::new();
+///A module containing several functions intended to be reused accross several "console window" applications. 
+mod console; 
 
-    print!("{msg}"); 
-    let _ = io::stdout().flush();
-    io::stdin().read_line(&mut input).expect("Unable to read input"); 
-
-    //Implicitly returns the string from stdin trimmed. 
-    input.trim().to_string()
-}
-
-
-    
-
-///Awaits user input - a means to stay inside a loop iteration. 
-fn await_continue(){
-    use std::io::{self};
-    println!("Press [enter] to continue...\r");
-    let mut input:String = String::new();
-    io::stdin().read_line(&mut input);
-
-}
 
 fn main() {
     
@@ -54,16 +27,16 @@ fn main() {
 
     //Main event loop to stay inside the OOP console program. 
     loop{
-        clear();
+        console::clear();
         println!("What do you want to do?");
         println!("C: Create a car\nR: Read all cars in digestable list\nS: Read contents of a specific car\nU: Update a car\nD: Delete a car\nQ: Quit");
 
         
-        let input = match std_input("Action: ").chars().nth(0){
+        let input = match console::std_input("Action: ").chars().nth(0){
             Some(x)=>x,
             None=>{
                 println!("Action was empty - please enter an action");
-                await_continue(); 
+                console::await_continue(); 
                 continue
             }
         };
@@ -71,7 +44,7 @@ fn main() {
         match input{
             'Q'|'q' => {
                 println!("The program will quit, Thanks for using my program.");
-                return await_continue();
+                return console::await_continue();
             }
             'C'|'c' => CreateCar(&mut car_vector),
             'R'|'r' => ReadAllCars(&car_vector),
@@ -81,7 +54,7 @@ fn main() {
             
             _=>println!("Invalid action")
         }
-        await_continue();
+        console::await_continue();
     }
 
 
@@ -91,11 +64,11 @@ fn main() {
 //CRUD CRUD CRUD CRUD
 
 fn CreateCar(car_vector: &mut Vec<Car>){
-    clear();
+    console::clear();
 
     println!("\nWhat brand is your car from?");
     
-    let brand = std_input("Brand: ");
+    let brand = console::std_input("Brand: ");
     match brand.as_str() {
         "Q"|"q"=>return println!("Return to menu"),
         _=>()
@@ -103,7 +76,7 @@ fn CreateCar(car_vector: &mut Vec<Car>){
 
     println!("\nWhat model is your car?");
     
-    let model= std_input("Model: ");
+    let model= console::std_input("Model: ");
     match model.as_str() {
         "Q"|"q"=>return println!("Return to menu"),
         _=>()
@@ -112,7 +85,7 @@ fn CreateCar(car_vector: &mut Vec<Car>){
 
     let year = loop{
         println!("\nWhat year was it made? ");
-        let input = std_input("Year: ");
+        let input = console::std_input("Year: ");
         match input.as_str(){
             "Q"|"q"=>return println!("Return to menu"),
             _=>()
@@ -122,7 +95,7 @@ fn CreateCar(car_vector: &mut Vec<Car>){
             Ok(x)=>{break x},
             Err(x)=>{
                 println!("error: {x}");
-                await_continue();
+                console::await_continue();
                 
     
             }
@@ -141,7 +114,7 @@ fn CreateCar(car_vector: &mut Vec<Car>){
     car_vector.push(new_car);
 
 
-    clear();
+    console::clear();
     println!("Cars in the car vector\n");
     ReadAllCars(car_vector);    
 
@@ -154,11 +127,11 @@ fn ReadAllCars(car_vector: &Vec<Car>){
     }
 }
 fn getSpecific(car_vector: &Vec<Car>){
-    clear();
+    console::clear();
     println!("Input the index of the car you want");
     ReadAllCars(&car_vector);
 
-    let input = std_input("Index: ");
+    let input = console::std_input("Index: ");
     match input.as_str(){
         "Q"|"q" => return println!("Returning to main menu"),
         _ => ()
@@ -168,7 +141,7 @@ fn getSpecific(car_vector: &Vec<Car>){
         Ok(x)=>x,
         Err(x)=>return {
             println!("error: {x}");
-            await_continue();
+            console::await_continue();
             getSpecific(car_vector);
 
         }
@@ -190,7 +163,7 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
     let index = loop{
         println!("What car would you like to update? \n");
         ReadAllCars(car_vector);
-        let input = std_input("Index: ");
+        let input = console::std_input("Index: ");
         match input.as_str(){
             "Q"|"q" => return println!("Returning to main menu"),
             _ => ()
@@ -201,7 +174,7 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
             Ok(x)=>{break x},
             Err(x)=>{
                 println!("error: {x}");
-                await_continue();
+                console::await_continue();
             }
         };
     }; 
@@ -218,7 +191,7 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
         println!("b: Brand\nm: Model\ny: Year");    
 
         //Match over attribute to edit
-        match std_input("Attribute: ").chars().nth(0){
+        match console::std_input("Attribute: ").chars().nth(0){
             //If the option is q/Q then the user probably wants to quit. 
             Some('q'|'Q')=>return println!("Returning to main menu"),
 
@@ -226,7 +199,7 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
             Some('b'|'B')=>{
                 println!("Edit attribute - brand");
                 //If someone inputs 'q' or 'Q' as either brand or model or year - then they most likely want to quit. therefore those cases are handled 
-                car.brand = match std_input("Brand: ").as_str(){
+                car.brand = match console::std_input("Brand: ").as_str(){
                     "q"|"Q"=>return println!("Returning to main menu"),
                     ""=>car.brand.clone(),
                     x=>x.to_string()
@@ -235,7 +208,7 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
             },
             Some('m'|'M')=>{
                 println!("Edit attribute - model");
-                car.model = match std_input("Model: ").as_str(){
+                car.model = match console::std_input("Model: ").as_str(){
                     "q"|"Q"=>return println!("Returning to main menu"),
                     ""=>car.model.clone(),
                     x=>x.to_string()
@@ -245,7 +218,7 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
                },
             Some('y'|'Y')=>{
                 println!("Edit attribute - year (input a number)");
-                let input= match std_input("Year: ").as_str(){
+                let input= match console::std_input("Year: ").as_str(){
                     "q"|"Q"=>return println!("Returning to main menu"),
                     x=>x.to_string()
                 };
@@ -274,7 +247,7 @@ fn DeleteCar(car_vector: &mut Vec<Car>){
 
     let index = loop{
         println!("What Car would you like to remove?\n");
-        let input = std_input("Index for deletion: ");
+        let input = console::std_input("Index for deletion: ");
         match input.as_str(){
             "Q"|"q" => return println!("Returning to main menu"),
             _ => ()
@@ -285,7 +258,7 @@ fn DeleteCar(car_vector: &mut Vec<Car>){
             Ok(x)=>{break x},
             Err(x)=>{
                 println!("error: {x}");
-                await_continue();
+                console::await_continue();
             }
         };
     }; 
