@@ -1,5 +1,4 @@
-//TODO: Make Create functions quittable.
-
+#![allow(non_snake_case)]
 
 
 
@@ -20,7 +19,7 @@ fn main() {
 
     
     let mut car_vector = vec![
-    Car{ brand: String::from("BMW"), model: String::from("530"), year: 2003}, 
+    Car{brand: String::from("BMW"), model: String::from("530"), year: 2003}, 
     Car{brand : String::from("Audi"), model: String::from("A6 Avant"), year:2022},
     Car{brand: String::from("Volkswagen"), model: String::from("Shirroco R 2.0"), year: 2016}
     ];
@@ -157,33 +156,41 @@ fn getSpecific(car_vector: &Vec<Car>){
     }
 
 }
-fn UpdateCar(car_vector: &mut Vec<Car>){    
+fn UpdateCar(car_vector: &mut Vec<Car>){
 
+    let car = loop{
+        let index = loop{
+            println!("What car would you like to update? \n");
+            ReadAllCars(car_vector);
+            let input = console::std_input("Index: ");
+            match input.as_str(){
+                "Q"|"q" => return println!("Returning to main menu"),
+                _ => ()
+            };
     
-    let index = loop{
-        println!("What car would you like to update? \n");
-        ReadAllCars(car_vector);
-        let input = console::std_input("Index: ");
-        match input.as_str(){
-            "Q"|"q" => return println!("Returning to main menu"),
-            _ => ()
-        };
-
-
-        match input.parse::<u32>(){
-            Ok(x)=>{break x},
-            Err(x)=>{
-                println!("error: {x}");
+            match input.parse::<u32>(){
+                Ok(x)=>{break x},
+                Err(x)=>{
+                    println!("error: {x}");
+                    console::await_continue();
+                }
+            };
+        }; 
+    
+    
+    
+    
+        
+        match car_vector.get_mut(index as usize){
+            Some(c)=>{break c},
+            None=>{
+                println!("No car could be found from that index");
                 console::await_continue();
+                console::clear();
             }
         };
-    }; 
 
-
-
-
-
-    let car : &mut Car = &mut car_vector[index as usize];
+    };
     
 
     loop{
@@ -202,6 +209,7 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
                 car.brand = match console::std_input("Brand: ").as_str(){
                     "q"|"Q"=>return println!("Returning to main menu"),
                     ""=>car.brand.clone(),
+                    
                     x=>x.to_string()
                 };
                 break
@@ -231,7 +239,8 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
                 break
                 },
             None | Some(_)=>{
-                println!("Invalid Attribute - ");
+                println!("Output omitted - Returning to main menu ");
+                return;
                 }
 
         };
@@ -246,6 +255,7 @@ fn UpdateCar(car_vector: &mut Vec<Car>){
 fn DeleteCar(car_vector: &mut Vec<Car>){
 
     let index = loop{
+        ReadAllCars(car_vector);
         println!("What Car would you like to remove?\n");
         let input = console::std_input("Index for deletion: ");
         match input.as_str(){
@@ -259,10 +269,10 @@ fn DeleteCar(car_vector: &mut Vec<Car>){
             Err(x)=>{
                 println!("error: {x}");
                 console::await_continue();
+                console::clear();
             }
         };
     }; 
-    ReadAllCars(car_vector);
 
     car_vector.remove(index as usize);
 
